@@ -1,0 +1,39 @@
+stages:
+  - test
+  - report
+
+variables:
+  NODE_ENV: test
+
+mobile_tests:
+  stage: test
+  image: node:20
+  before_script:
+    - npm ci
+  script:
+    - npx wdio run ./wdio.conf.js
+  artifacts:
+    when: always
+    paths:
+      - allure-results/
+    expire_in: 7 days
+  only:
+    - main
+    - merge_requests
+
+allure_report:
+  stage: report
+  image: frankescobar/allure-docker-service
+  dependencies:
+    - mobile_tests
+  script:
+    - mkdir -p allure-report
+    - allure generate allure-results --clean -o allure-report
+  artifacts:
+    when: always
+    paths:
+      - allure-report/
+    expire_in: 7 days
+  only:
+    - main
+    - merge_requests

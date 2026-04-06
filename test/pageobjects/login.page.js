@@ -1,3 +1,4 @@
+import { $, expect } from '@wdio/globals';
 import BasePage from './base.page.js';
 
 class LoginPage extends BasePage {
@@ -6,32 +7,48 @@ class LoginPage extends BasePage {
         return $('~Login');
     }
 
-    get inputEmail () {
+    get inputEmail() {
         return $('~input-email');
     }
 
-    get inputPassword () {
+    get inputPassword() {
         return $('~input-password');
     }
 
-    get botaoLogin () {
+    get botaoLogin() {
         return $('~button-LOGIN');
     }
 
     get mensagemConfirmacaoLogin() {
-        return $('id=android:id/message');
-    }
-    
-    get btnOKLogin() {
-        return $('id=android:id/button1');
+        return driver.isAndroid
+            ? $('id=android:id/message')
+            : $('//XCUIElementTypeAlert');
     }
 
-    get mensagemErroEmail() { 
-        return $('//android.widget.TextView[@text="Please enter a valid email address"]'); 
+    get tituloModalSucessoIOS() {
+        return $('//*[@name="Success" or @label="Success" or @value="Success"]');
     }
-    
+
+    get textoModalSucessoIOS() {
+        return $('//*[@name="You are logged in!" or @label="You are logged in!" or @value="You are logged in!"]');
+    }
+
+    get btnOKLogin() {
+        return driver.isAndroid
+            ? $('id=android:id/button1')
+            : $('~OK');
+    }
+
+    get mensagemErroEmail() {
+        return driver.isAndroid
+            ? $('//android.widget.TextView[@text="Please enter a valid email address"]')
+            : $('//*[@name="Please enter a valid email address" or @label="Please enter a valid email address" or @value="Please enter a valid email address"]');
+    }
+
     get mensagemErroSenha() {
-        return $('//android.widget.TextView[@text="Please enter at least 8 characters"]');
+        return driver.isAndroid
+            ? $('//android.widget.TextView[@text="Please enter at least 8 characters"]')
+            : $('//*[@name="Please enter at least 8 characters" or @label="Please enter at least 8 characters" or @value="Please enter at least 8 characters"]');
     }
 
     async abrirTelaLogin() {
@@ -48,22 +65,45 @@ class LoginPage extends BasePage {
 
     async acionarBotaoLogin() {
         await this.aguardarEAcionar(this.botaoLogin);
+
+        if (driver.isIOS) {
+            const modalApareceu =  await this.mensagemConfirmacaoLogin.isDisplayed().catch(() => false);
+
+
+            if (!modalApareceu) {
+                await browser.pause(1000);
+                await this.aguardarEAcionar(this.botaoLogin);
+            }
+        }
     }
 
     async validarMensagemLoginSucesso() {
+        if (driver.isAndroid) {
+            await this.aguardarElemento(this.mensagemConfirmacaoLogin);
+            await expect(this.mensagemConfirmacaoLogin).toBeDisplayed();
+            return;
+        }
+
         await this.aguardarElemento(this.mensagemConfirmacaoLogin);
-        return await this.mensagemConfirmacaoLogin.isDisplayed();
+        await expect(this.mensagemConfirmacaoLogin).toBeDisplayed();
+        await expect(this.tituloModalSucessoIOS).toBeDisplayed();
+        await expect(this.textoModalSucessoIOS).toBeDisplayed();
+        await expect(this.btnOKLogin).toBeDisplayed();
     }
 
     async validarMensagemErroEmailVisivel() {
-        globalThis.console.log('🔥 Método de erro do email foi chamaaaaaaaaaadooooooooo');
         await this.aguardarElemento(this.mensagemErroEmail);
-        return await this.mensagemErroEmail.isDisplayed();
+        await expect(this.mensagemErroEmail).toBeDisplayed();
     }
-    
+
     async validarMensagemErroSenhaVisivel() {
         await this.aguardarElemento(this.mensagemErroSenha);
-        return await this.mensagemErroSenha.isDisplayed();
+        await expect(this.mensagemErroSenha).toBeDisplayed();
+    }
+
+    async validarMensagensErroLogin() {
+        await this.validarMensagemErroEmailVisivel();
+        await this.validarMensagemErroSenhaVisivel();
     }
 }
 

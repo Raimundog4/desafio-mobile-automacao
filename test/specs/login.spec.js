@@ -16,7 +16,7 @@ describe('Funcionalidade: Tela de Login', () => {
         await loginPage.acionarBotaoLogin();
 
         // Então o sistema apresenta a mensagem de login realizado com sucesso
-        await expect(await loginPage.validarMensagemLoginSucesso()).toBe(true);
+        await loginPage.validarMensagemLoginSucesso();
     });
 
     it('CT-002 - Tentativa de login informando dados inválidos', async () => {
@@ -33,9 +33,9 @@ describe('Funcionalidade: Tela de Login', () => {
         await loginPage.acionarBotaoLogin();
 
         // Então o sistema apresenta a mensagem de erro de email inválido
-        await expect(await loginPage.validarMensagemErroEmailVisivel()).toBe(true);
+        await loginPage.validarMensagemErroEmailVisivel();
 
         // E o sistema apresenta a mensagem de erro de senha inválida
-        await expect(await loginPage.validarMensagemErroSenhaVisivel()).toBe(true);
+        await loginPage.validarMensagemErroSenhaVisivel();
     });
 });

@@ -1,5 +1,4 @@
-import { expect } from '@wdio/globals';
-import signUpPage from '../pageobjects/signUp.page.js';
+import signUpPage from '../pageobjects/signup.page.js';
 import { cadastroData } from '../data/cadastro.data.js';
 
 describe('Funcionalidade: Cadastro de usuário', () => {
@@ -7,7 +6,7 @@ describe('Funcionalidade: Cadastro de usuário', () => {
     async function acessarTelaDeCadastro() {
         await signUpPage.abrirTelaLogin();
         await signUpPage.acessarAbaCadastro();
-    };
+    }
 
     it('CT-001 - Realizar cadastro com sucesso ao informar dados válidos', async () => {
         const email = cadastroData.sucesso.email();
@@ -29,8 +28,7 @@ describe('Funcionalidade: Cadastro de usuário', () => {
         await signUpPage.acionarBotaoSignUp();
 
         // Então o sistema deve apresentar a mensagem de confirmação de cadastro com sucesso
-        await signUpPage.aguardarElemento(signUpPage.mensagemConfirmacaoCadastro);
-        await expect(signUpPage.mensagemConfirmacaoCadastro).toBeDisplayed();
+        await signUpPage.validarCadastroComSucesso();
     });
 
     it('CT-002 - Visualizando mensagens de erro ao tentar realizar cadastro com dados inválidos', async () => {
@@ -52,10 +50,6 @@ describe('Funcionalidade: Cadastro de usuário', () => {
         await signUpPage.acionarBotaoSignUp();
 
         // Então o sistema deve apresentar as mensagens de erro correspondentes
-        for (const mensagem of dados.mensagens) {
-            await expect(
-                await signUpPage.validarMensagemErroVisivel(mensagem)
-            ).toBe(true);
-        }
+        await signUpPage.validarErrosCadastro(dados.mensagens);
     });
 });

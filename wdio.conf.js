@@ -17,22 +17,44 @@ export const config = {
 
     maxInstances: 1,
 
-    capabilities: [{
+    capabilities: [
+    {
         platformName: 'Android',
         'appium:deviceName': 'Samsung Galaxy S22',
         'appium:platformVersion': '12.0',
         'appium:automationName': 'UiAutomator2',
-        'appium:app': process.env.BROWSERSTACK_APP,
+        'appium:app': process.env.BROWSERSTACK_APP_ANDROID,
         'appium:noReset': false,
-        
+
         'bstack:options': {
             projectName: 'Carrefour Mobile Automacao',
-            buildName: 'build-1',
-            sessionName: 'Login Test',
+            buildName: process.env.CI_PIPELINE_ID
+                ? `GitLab Pipeline #${process.env.CI_PIPELINE_ID}`
+                : 'Local Run',
+            sessionName: 'Android Tests',
             debug: true,
             networkLogs: true
         }
-    }],
+    },
+    {
+        platformName: 'iOS',
+        'appium:deviceName': 'iPhone 15',
+        'appium:platformVersion': '17',
+        'appium:automationName': 'XCUITest',
+        'appium:app': process.env.BROWSERSTACK_APP_IOS,
+        'appium:noReset': false,
+
+        'bstack:options': {
+            projectName: 'Carrefour Mobile Automacao',
+            buildName: process.env.CI_PIPELINE_ID
+                ? `GitLab Pipeline #${process.env.CI_PIPELINE_ID}`
+                : 'Local Run',
+            sessionName: 'iOS Tests',
+            debug: true,
+            networkLogs: true
+        }
+    }
+],
 
     logLevel: 'info',
 
@@ -65,23 +87,26 @@ export const config = {
     },
 
     beforeTest: async function () {
-        globalThis.console.log('🔥 beforeTest rodou');
-    const appId = 'com.wdiodemoapp';
-    await browser.activateApp(appId);
-    await browser.pause(2000);
-},
+        const appId = driver.isAndroid
+            ? 'com.wdiodemoapp'
+            : 'org.reactjs.native.example.wdioDemoApp'
 
-   afterTest: async function (test, context, { error }) {
-    const screenshot = await browser.takeScreenshot();
+        await browser.activateApp(appId)
+        await browser.pause(2000)
+    },
 
-    // opcional: só logar quando falha
-    if (error) {
-        console.log('Erro capturado, screenshot gerado');
-    }
+    afterTest: async function (test, context, { error }) {
+        if (error) {
+            await browser.takeScreenshot()
+            console.log('Erro capturado, screenshot gerado')
+        }
 
-    await browser.terminateApp('com.wdiodemoapp');
-    await browser.execute('mobile: clearApp', { appId: 'com.wdiodemoapp' });
-},
+        const appId = driver.isAndroid
+            ? 'com.wdiodemoapp'
+            : 'org.reactjs.native.example.wdioDemoApp'
+
+        await browser.terminateApp(appId)
+    },
 
     onComplete: function () {
         const report = allure(['generate', 'allure-results', '--clean'])

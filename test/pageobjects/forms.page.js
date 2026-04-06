@@ -20,23 +20,37 @@ class FormsPage extends BasePage {
     }
 
     get selectDropdown() {
-        return $('//*[@content-desc="Dropdown"]');
+        return driver.isAndroid
+            ? $('//*[@content-desc="Dropdown"]')
+            : $('~select-Dropdown');
     }
 
     opcaoDropdown(opcao) {
-        return $(`//*[@text="${opcao}"]`);
+        return driver.isAndroid
+            ? $(`//*[@text="${opcao}"]`)
+            : $(`//*[@name="${opcao}" or @label="${opcao}" or @value="${opcao}"]`);
     }
 
     get campoDropdownSelecionado() {
-    return $('//*[@content-desc="Dropdown"]/android.widget.EditText');
-}
-
-    get botaoActive() {
-        return $('~button-Active');
+        return driver.isAndroid
+            ? $('//*[@content-desc="Dropdown"]/android.widget.EditText')
+            : $('~select-Dropdown');
     }
 
-    get activeMessagemTexto() { 
-        return $('//*[@text="This button is active"]');
+    get botaoActive() {
+        return driver.isAndroid
+            ? $('~button-Active')
+            : $('//*[@name="button-Active" or @label="Active" or @name="Active"]');
+    }
+
+    get activeMensagemTexto() {
+        return driver.isAndroid
+            ? $('//*[@text="This button is active"]')
+            : $('//*[@name="This button is active" or @label="This button is active" or @value="This button is active"]');
+    }
+
+    get pickerWheel() {
+        return $('//XCUIElementTypePickerWheel');
     }
 
     async abrirTelaForms() {
@@ -44,8 +58,8 @@ class FormsPage extends BasePage {
     }
 
     async preencherCampoInput(texto) {
-        this.textoDigitado = texto;
-        await this.inputField.setValue(String(texto));
+        this.textoDigitado = String(texto);
+        await this.inputField.setValue(this.textoDigitado);
     }
 
     async validarTextoPreenchido() {
@@ -53,42 +67,76 @@ class FormsPage extends BasePage {
         return await this.inputTyped.getText() === this.textoDigitado;
     }
 
-    async ativarSwitch() {
-        const estaAtivado = await this.botaoSwitch.getAttribute('checked');
+    async obterEstadoSwitch() {
+        if (driver.isAndroid) {
+            return await this.botaoSwitch.getAttribute('checked');
+        }
 
-        if (estaAtivado === 'false') {
+        return await this.botaoSwitch.getAttribute('value');
+    }
+
+    async ativarSwitch() {
+        const estado = await this.obterEstadoSwitch();
+
+        if (estado === 'false' || estado === '0') {
             await this.aguardarEAcionar(this.botaoSwitch);
-        }      
+        }
     }
 
     async validarSwitchAtivado() {
-         await expect(this.botaoSwitch).toHaveAttr('checked', 'true');
+        if (driver.isAndroid) {
+            await expect(this.botaoSwitch).toHaveAttr('checked', 'true');
+            return;
+        }
+
+        await expect(this.botaoSwitch).toHaveAttr('value', '1');
     }
 
     async desativarSwitch() {
-        const estaAtivado = await this.botaoSwitch.getAttribute('checked');
+        const estado = await this.obterEstadoSwitch();
 
-        if (estaAtivado === 'true') {
+        if (estado === 'true' || estado === '1') {
             await this.aguardarEAcionar(this.botaoSwitch);
-        }        
+        }
     }
 
     async validarSwitchDesativado() {
-         await expect(this.botaoSwitch).toHaveAttr('checked', 'false');
+        if (driver.isAndroid) {
+            await expect(this.botaoSwitch).toHaveAttr('checked', 'false');
+            return;
+        }
+
+        await expect(this.botaoSwitch).toHaveAttr('value', '0');
     }
 
     async acionarSelectDropdown() {
-        await this.aguardarEAcionar(this.selectDropdown);        
+        await this.aguardarEAcionar(this.selectDropdown);
     }
 
-    async selecionarOpcaoDropdown(opcao) {   
-        this.opcaoSelecionada = opcao; 
+    async selecionarOpcaoDropdown(opcao) {
+    this.opcaoSelecionada = opcao;
+
+    if (driver.isAndroid) {
         await this.aguardarEAcionar(this.opcaoDropdown(opcao));
+        return;
+    }
+
+        await this.selecionarOpcaoDropdownIOS(opcao);
+    }    
+
+    async selecionarOpcaoDropdownIOS(opcao) {
+        await this.aguardarElemento(this.pickerWheel);
+        await this.pickerWheel.setValue(opcao);
     }
 
     async validarOpcaoDropdownSelecionada() {
-        await this.aguardarElemento(this.campoDropdownSelecionado);
-        await expect(this.campoDropdownSelecionado).toHaveText(this.opcaoSelecionada);
+        if (driver.isAndroid) {
+            await this.aguardarElemento(this.campoDropdownSelecionado);
+            await expect(this.campoDropdownSelecionado).toHaveText(this.opcaoSelecionada);
+            return;
+        }
+
+        await expect(this.selectDropdown).toHaveText(expect.stringContaining(this.opcaoSelecionada));
     }
 
     async acionarBotaoActive() {
@@ -96,8 +144,8 @@ class FormsPage extends BasePage {
     }
 
     async validarModalVisivel() {
-        await this.aguardarElemento(this.activeMessagemTexto);
-        return await this.activeMessagemTexto.isDisplayed();
+        await this.aguardarElemento(this.activeMensagemTexto);
+        await expect(this.activeMensagemTexto).toBeDisplayed();
     }
 }
 

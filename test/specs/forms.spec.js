@@ -32,27 +32,27 @@ describe('Funcionalidade: Tela de Forms', () => {
     });
 
     it('CT-003 - Selecionar opção no Dropdown com sucesso', async () => {
-    // Dado que o usuário tenha acessado a tela de Forms
-    await formsPage.abrirTelaForms();
+        // Dado que o usuário tenha acessado a tela de Forms
+        await formsPage.abrirTelaForms();
 
-    // Quando aciona o Dropdown
-    await formsPage.acionarSelectDropdown();
+        // Quando aciona o Dropdown
+        await formsPage.acionarSelectDropdown();
 
-    // E seleciona a opção "Appium is awesome"
-    await formsPage.selecionarOpcaoDropdown('Appium is awesome');
+        // E seleciona a opção "Appium is awesome"
+        await formsPage.selecionarOpcaoDropdown('Appium is awesome');
 
-    // Então o sistema apresenta a opção selecionada no campo Dropdown
-    await formsPage.validarOpcaoDropdownSelecionada();
+        // Então o sistema apresenta a opção selecionada no campo Dropdown
+        await formsPage.validarOpcaoDropdownSelecionada();
     });
 
     it('CT-004 - Acionar o botão Active com sucesso', async () => {
     // Dado que o usuário tenha acessado a tela de Forms
-    await formsPage.abrirTelaForms();
+        await formsPage.abrirTelaForms();
 
-    // Quando aciona o botão Active
-    await formsPage.acionarBotaoActive();
+        // Quando aciona o botão Active
+        await formsPage.acionarBotaoActive();
 
-    // Então o sistema apresenta o modal com a mensagem esperada
-    await expect(await formsPage.validarModalVisivel()).toBe(true);
+        // Então o sistema apresenta o modal com a mensagem esperada
+        await formsPage.validarModalVisivel();
     });
 });
